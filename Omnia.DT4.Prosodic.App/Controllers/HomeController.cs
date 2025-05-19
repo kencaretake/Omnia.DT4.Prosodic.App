@@ -1,6 +1,8 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Omnia.DT4.Prosodic.App.Models;
+using System.Diagnostics;
 
 namespace Omnia.DT4.Prosodic.App.Controllers
 {
@@ -13,11 +15,25 @@ namespace Omnia.DT4.Prosodic.App.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var data = await GetProsodicsAsync();
+            return View(data);
+            
         }
-
+        public async Task<ProsodicModel> GetProsodicsAsync()
+        {
+            ProsodicModel prosodic ;
+            using (var httpClient = new HttpClient())
+            {
+                using (HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7030/api/prosodic/"))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    prosodic= JsonConvert.DeserializeObject<ProsodicModel>(apiResponse);
+                }
+            }
+            return  prosodic;
+        }
         public IActionResult Privacy()
         {
             return View();
